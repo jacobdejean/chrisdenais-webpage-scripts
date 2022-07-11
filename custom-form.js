@@ -1,4 +1,3 @@
-
 function setModifierClass(element, mod) {
     if (mod.length > 0 && !element.classList.contains(mod))
         element.classList.add(mod);
@@ -29,7 +28,7 @@ class ValidatableInputField {
         this.input = input;
         this.errorMessage = errorMessage;
 
-    this.validationState = true;
+        this.validationState = true;
     }
 
     validate() {
@@ -175,12 +174,6 @@ function setButtonState(state, copy, style) {
     setModifierClass(visibleSubmitButton, style);
 }
 
-setModifierClass(nameLabel, 'placeholder');
-setModifierClass(emailLabel, 'placeholder');
-setModifierClass(messageLabel, 'placeholder');
-
-let changed = false;
-
 function onFocusOut(label, inputField) {
     if (changed) {
         inputField.validate();
@@ -188,6 +181,12 @@ function onFocusOut(label, inputField) {
         setModifierClass(label, inputField.input.value.length > 0 ? 'filled' : 'placeholder');
     }
 }
+
+setModifierClass(nameLabel, 'placeholder');
+setModifierClass(emailLabel, 'placeholder');
+setModifierClass(messageLabel, 'placeholder');
+
+let changed = false;
 
 nameInput.addEventListener('change', () => { changed = true; });
 emailInput.addEventListener('change', () => { changed = true; });
@@ -206,9 +205,7 @@ const hiddenFormSubmitEvent = (function () {
             settings.url.includes("https://webflow.com/api/v1/form/") ? xhr.status === 200 ? onSuccess() : onFail() : null;
         });
     }
-    return {
-        init
-    }
+    return init;
 })()
 
 hiddenFormSubmitEvent.init({
