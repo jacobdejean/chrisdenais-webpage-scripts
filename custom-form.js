@@ -92,6 +92,7 @@ class ValidatableInputGroup {
     reset() {
         this.group.forEach(field => {
             field.resetValidationState();
+            field.input.value = '';
         });
     }
 
