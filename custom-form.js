@@ -158,7 +158,7 @@ function visibleSubmitClick(evt) {
         hiddenEmailInput.value = emailInput.value;
         hiddenMessageInput.value = messageInput.value;
 
-        setTimeout(send, 2000);
+        setTimeout(send, 1200);
     }
     else {
         setButtonState('def', 'SEND', '');
@@ -166,7 +166,7 @@ function visibleSubmitClick(evt) {
 }
 
 function send() {
-    hiddenSubmitButton.click()
+    hiddenSubmitButton.click();
 }
 
 function setButtonState(state, copy, style) {
@@ -229,6 +229,7 @@ hiddenFormSubmitEvent.init({
 
 function showErrorState() {
     formErrorMessage.style.display = 'block';
+    setButtonState('def', 'SEND', '');
 }
 
 function showSuccessState() {
