@@ -1,17 +1,17 @@
 function setModifierClass(element, mod) {
-    if(mod.length > 0 && !element.classList.contains(mod))
+    if (mod.length > 0 && !element.classList.contains(mod))
         element.classList.add(mod);
 }
 
 function removeModifierClass(element, mod) {
-    if(element.classList.contains(mod))
+    if (element.classList.contains(mod))
         element.classList.remove(mod);
 }
 
 function removeClassModifiers(element) {
     let classes = element.className.split(' ');
 
-    if(classes.length > 1)
+    if (classes.length > 1)
         element.className = classes[0];
 }
 
@@ -43,7 +43,7 @@ class ValidatableInputField {
 
         this.setValidationState(value.length != 0);
 
-        if(!this.isValid())
+        if (!this.isValid())
             this.errorMessage.innerText = 'This field is required';
     }
 
@@ -53,17 +53,17 @@ class ValidatableInputField {
         tester.type = 'email';
         tester.value = this.input.value.trim();
 
-        this.setValidationState(typeof tester.checkValidity === 'function' ? tester.checkValidity() 
-        : /\S+@\S+\.\S+/.test(tester.value));
+        this.setValidationState(typeof tester.checkValidity === 'function' ? tester.checkValidity()
+            : /\S+@\S+\.\S+/.test(tester.value));
 
-        if(!this.isValid())
+        if (!this.isValid())
             this.errorMessage.innerText = 'Enter a valid email address';
     }
 
     setValidationState(valid) {
         this.validationState = valid;
 
-        if(!valid)
+        if (!valid)
             setModifierClass(this.container, 'error');
     }
 
@@ -89,11 +89,17 @@ class ValidatableInputGroup {
         });
     }
 
+    reset() {
+        this.group.forEach(field => {
+            field.resetValidationState();
+        });
+    }
+
     allAreValid() {
         let result = true;
 
         this.group.forEach(field => {
-            if(!field.isValid())
+            if (!field.isValid())
                 result = false;
         });
 
@@ -133,7 +139,7 @@ let nameInputField = new ValidatableInputField("name", "empty", nameInputDiv, na
 let emailInputField = new ValidatableInputField("email", "empty email", emailInputDiv, emailInput, emailErrorMessage);
 let messageInputField = new ValidatableInputField("message", "empty", messageInputDiv, messageInput, messageErrorMessage);
 
-let inputGroup = new ValidatableInputGroup([ nameInputField, emailInputField, messageInputField ]);
+let inputGroup = new ValidatableInputGroup([nameInputField, emailInputField, messageInputField]);
 
 function visibleSubmitClick(evt) {
     evt.preventDefault();
@@ -144,7 +150,7 @@ function visibleSubmitClick(evt) {
 
     inputGroup.validate();
 
-    if(inputGroup.allAreValid()) {
+    if (inputGroup.allAreValid()) {
 
         // pass visible form to hidden form
         hiddenNameInput.value = nameInput.value;
@@ -157,6 +163,8 @@ function visibleSubmitClick(evt) {
         setButtonState('def', 'SEND', '');
     }
 
+    inputGroup.reset();
+    changed = false;
 }
 
 function send() {
@@ -174,19 +182,19 @@ function setButtonState(state, copy, style) {
     setModifierClass(visibleSubmitButton, style);
 }
 
-setModifierClass(nameLabel, 'placeholder');
-setModifierClass(emailLabel, 'placeholder');
-setModifierClass(messageLabel, 'placeholder');
-
-let changed = false;
-
 function onFocusOut(label, inputField) {
-    if(changed) {
+    if (changed) {
         inputField.validate();
         removeClassModifiers(label);
         setModifierClass(label, inputField.input.value.length > 0 ? 'filled' : 'placeholder');
     }
 }
+
+setModifierClass(nameLabel, 'placeholder');
+setModifierClass(emailLabel, 'placeholder');
+setModifierClass(messageLabel, 'placeholder');
+
+let changed = false;
 
 nameInput.addEventListener('change', () => { changed = true; });
 emailInput.addEventListener('change', () => { changed = true; });
@@ -205,9 +213,7 @@ const hiddenFormSubmitEvent = (function () {
             settings.url.includes("https://webflow.com/api/v1/form/") ? xhr.status === 200 ? onSuccess() : onFail() : null;
         });
     }
-    return {
-        init
-    }
+    return init;
 })()
 
 hiddenFormSubmitEvent.init({
@@ -215,7 +221,7 @@ hiddenFormSubmitEvent.init({
         console.log('STATUS 200 from from submit: OK');
         showSuccessState();
     },
-    onFail : ()=>{
+    onFail: () => {
         console.log('Error submitting form');
         showErrorState();
     }
