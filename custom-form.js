@@ -163,9 +163,6 @@ function visibleSubmitClick(evt) {
     else {
         setButtonState('def', 'SEND', '');
     }
-
-    inputGroup.reset();
-    changed = false;
 }
 
 function send() {
@@ -234,4 +231,6 @@ function showErrorState() {
 
 function showSuccessState() {
     setButtonState('complete', 'MESSAGE SENT', '');
+    inputGroup.reset();
+    changed = false;
 }
