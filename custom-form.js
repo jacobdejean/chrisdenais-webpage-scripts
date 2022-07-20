@@ -211,8 +211,10 @@ const hiddenFormSubmitEvent = (function () {
             settings.url.includes("https://webflow.com/api/v1/form/") ? xhr.status === 200 ? onSuccess() : onFail() : null;
         });
     }
-    return init;
-})()
+    return {
+        init
+    }
+})();
 
 hiddenFormSubmitEvent.init({
     onSuccess: () => {
