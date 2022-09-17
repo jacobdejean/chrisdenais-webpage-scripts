@@ -1,129 +1,127 @@
-const states = {
-    current_text: document.getElementById("current_text"),
-    next_text: document.getElementById("next_text")
-};
-
-let controlIndicatorDiv = document.getElementById('control-indicator-div');
-let currentSlideAuthorElement = document.getElementById('testimonial-author');
-let filters = document.getElementById('filters');
-let testimonialArea = document.getElementById('testimonial-area');
-
-const testimonials = [
-            ['"Chris\' quality of work and commitment to the Figma design deliverables, the project timeline, and the satisfaction of the end users was top notch. He\'s a talented and highly capable designer."', "Mason Shewman\nFounder, Anvil Digital"],
-            ['"Suspendisse quis accumsan ex, sed convallis nulla. Donec placerat nisl vitae justo volutpat finibus vitae ut lectus. Nullam ornare, metus et."', "Mason Shewman\nFounder, Anvil Digital"],
-            ['"Vivamus quis aliquet turpis. Curabitur et vestibulum massa. Ut consequat mauris non eros finibus, viverra sagittis nisl auctor. Sed quis felis."', "Mason Shewman\nFounder, Anvil Digital"],
-            ['"Mauris sed neque tellus. Phasellus tristique eget erat sed dignissim. Cras ut ligula aliquet mauris faucibus tristique. Proin commodo aliquet ipsum."', "Mason Shewman\nFounder, Anvil Digital"],
-            ['"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vestibulum ullamcorper leo sed tristique. Suspendisse molestie erat in venenatis maximus. Proin."', "Mason Shewman\nFounder, Anvil Digital"]
-];
-
-const morphTime = 2;
-
+const testimonialUrl = 'https://uploads-ssl.webflow.com/62b632a343e2852836af0565/62d4f6ac727756947b8f3c98_testimonials.txt';
+let testimonials = {};
 let currentSlideIndex = 0;
-let time = new Date();
-let morph = 0;
-let pause = false;
-
-states.current_text.textContent = testimonials[currentSlideIndex % testimonials.length][0];
-states.next_text.textContent = testimonials[currentSlideIndex % testimonials.length][0];
-currentSlideAuthorElement.innerText = testimonials[currentSlideIndex % testimonials.length][1];
-
-function doMorph() {
-    morph += 0.02;
-
-    let fraction = morph / morphTime;
-
-    if (fraction > 1) {
-        //cooldown = cooldownTime;
-        fraction = 1;
-        currentSlideAuthorElement.style.transform = "translate(0rem)";
-        currentSlideAuthorElement.style.opacity = '100%';
-        testimonialArea.classList.remove('is-morphing');
+let nextQuote = document.getElementById('next-quote');
+let nextAuthor = document.getElementById('next-author');
+let testimonialContainer = document.getElementById('testimonial-container');
+let mobileDetector = document.getElementById('mobile-detector');
+let sliderSection = document.getElementById('slider-section');
+let threshholdMatrix = document.getElementById('threshholdMatrix');
+let gaussianBlur = document.getElementById('gaussianBlur');
+let controlIndicatorDiv = document.getElementById('control-indicator-div');
+let maxBlur = 7;
+let blurIndex = 1;
+let blurIntensity = 0;
+let blurDirection = 0.02;
+let transitionDone = false;
+let swappedStates = false;
+let blurIncreasing = true;
+let onMobile = false;
+let autoslideCooldown = 5000;
+let autoslideTimeoutID = 0;
+fetch(testimonialUrl).then((res) => {
+    res.json().then((json) => {
+        testimonials = json.testimonials;
+        onLoad();
+    });
+});
+function onLoad() {
+    currentSlideIndex = testimonials.length - 1;
+    nextQuote.innerText = testimonials[currentSlideIndex].quote;
+    nextAuthor.innerText = testimonials[currentSlideIndex].author;
+    for (let i = 0; i < testimonials.length; i++) {
+        let indicator = document.createElement('div');
+        indicator.className = 'control-indicator' + ((i == testimonials.length - 1) ? ' last-indicator' : '');
+        indicator.id = 'indicator-' + i;
+        controlIndicatorDiv.appendChild(indicator);
     }
-
-    setMorph(fraction);
+    onMobile = $('#mobile-detector').css('display') === 'none';
+    setActiveIndicatorColor('white');
+    tryAutoslide();
+    startAnimation();
 }
-
-function setMorph(fraction) {
-    states.next_text.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
-    states.next_text.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
-
-    fraction = 1 - fraction;
-    states.current_text.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
-    states.current_text.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    let newTime = new Date();
-    let dt = (newTime - time) / 1000;
-    time = newTime;
-
-    if(morph < morphTime)
-        doMorph();
-}
-
-function goNext() {
+function goNext(fromAutoslide) {
     setActiveIndicatorColor('#3A3645');
-
-    states.current_text.textContent = testimonials[currentSlideIndex % testimonials.length][0];
-    states.next_text.textContent = testimonials[(currentSlideIndex + 1) % testimonials.length][0];
-
     if (currentSlideIndex >= testimonials.length - 1)
         currentSlideIndex = 0;
     else
         currentSlideIndex++;
-
-    
     setActiveIndicatorColor('white');
-    skipMorph();
+    if (fromAutoslide) {
+        tryAutoslide(1);
+    } else {
+        cancelAutoslide();
+    }
+    startAnimation();
 }
-
 function goPrevious() {
     setActiveIndicatorColor('#3A3645');
-
-    states.current_text.textContent = testimonials[currentSlideIndex % testimonials.length][0];
-    states.next_text.textContent = testimonials[currentSlideIndex == 0 ? testimonials.length - 1 : (currentSlideIndex - 1) % testimonials.length][0];
-
     if (currentSlideIndex <= 0)
         currentSlideIndex = testimonials.length - 1;
     else
         currentSlideIndex--;
-
     setActiveIndicatorColor('white');
-    skipMorph();
+    cancelAutoslide();
+    startAnimation();
 }
-
-function skipMorph() {
-    pause = false;
-    morph = 0;
-
-    filters.style.display = 'block';
-
-    states.next_text.style.filter = "";
-    states.next_text.style.opacity = "100%";
-
-    states.current_text.style.filter = "";
-    states.current_text.style.opacity = "0%";
-
-    currentSlideAuthorElement.innerText = testimonials[currentSlideIndex % testimonials.length][1];
-    currentSlideAuthorElement.style.transform = "translate(-20rem)";
-    currentSlideAuthorElement.style.opacity = '0%';
-    testimonialArea.classList.remove('is-morphing');
-    testimonialArea.classList.add('is-morphing');
+function startAnimation() {
+    transitionDone = false;
+    blurIntesity = 0;
+    blurDirection = 0.02;
+    swappedStates = false;
+    if (!onMobile)
+        testimonialContainer.classList.add('desktop-filter');
+    animate();
 }
-
-
+function animate() {
+    if (!transitionDone) {
+        requestAnimationFrame(animate);
+        //gaussianBlur.setAttribute('stdDeviation', "" + easeInOutQuad(blurIntensity / maxBlur) * maxBlur);
+        //gaussianBlur.setAttribute('stdDeviation', "" + easeInOutQuad(0.7 / maxBlur) * maxBlur);
+        blurIndex += 2;
+        //blurIntensity = easeInQuart(Math.sin(blurIndex) / 100);
+        blurIntensity = easeInQuart(Math.sin(blurIndex / 50));
+        if (!swappedStates && blurIntensity >= 0.99) {
+            swapState();
+        }
+        if (swappedStates && blurIntensity <= 0.016) {
+            stopTransition();
+            blurIndex = 1;
+        }
+        if (!onMobile)
+            gaussianBlur.setAttribute('stdDeviation', "" + (blurIntensity * maxBlur));
+        else
+            testimonialContainer.style.opacity = ((-blurIntensity + 1) * 100) + '%';
+    }
+}
+function swapState() {
+    swappedStates = true;
+    nextQuote.innerText = testimonials[currentSlideIndex].quote;
+    nextAuthor.innerText = testimonials[currentSlideIndex].author;
+}
+function tryAutoslide(multiplier) {
+    autoslideTimeoutID = setTimeout(() => { goNext(true); }, autoslideCooldown * multiplier);
+}
+function cancelAutoslide() {
+    if (autoslideTimeoutID != -1) {
+        clearTimeout(autoslideTimeoutID);
+    }
+    tryAutoslide(2);
+}
+function stopTransition() {
+    transitionDone = true;
+    if (!onMobile)
+        testimonialContainer.classList.remove('desktop-filter');
+}
+function easeInOutQuint(x) {
+    return x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
+}
+function easeInQuart(x) {
+    return x * x * x * x;
+}
+function easeInOutCubic(x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
 function setActiveIndicatorColor(color) {
     document.getElementById('indicator-' + currentSlideIndex).style.backgroundColor = color;
 }
-
-for (let i = 0; i < testimonials.length; i++) {
-    let indicator = document.createElement('div');
-
-    indicator.className = 'control-indicator';
-    indicator.id = 'indicator-' + i;
-    controlIndicatorDiv.appendChild(indicator);
-}
-
-animate();
