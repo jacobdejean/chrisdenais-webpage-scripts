@@ -8,11 +8,11 @@ function removeModifierClass(element, mod) {
         element.classList.remove(mod);
 }
 
-function removeClassModifiers(element) {
+function removeClassModifiers(element, safe) {
     let classes = element.className.split(' ');
+    let remaining = classes.filter((className, index) => index == 0 || safe.includes(className));
 
-    if (classes.length > 1)
-        element.className = classes[0];
+    element.className = remaining.join(' ');
 }
 
 class ValidatableInputField {
@@ -176,14 +176,14 @@ function setButtonState(state, copy, style) {
 
     submitButtonText.innerText = copy;
 
-    removeClassModifiers(visibleSubmitButton);
+    removeClassModifiers(visibleSubmitButton, '');
     setModifierClass(visibleSubmitButton, style);
 }
 
 function onFocusOut(label, inputField) {
     if (changed) {
         inputField.validate();
-        removeClassModifiers(label);
+        removeClassModifiers(label, 'area');
         setModifierClass(label, inputField.input.value.length > 0 ? 'filled' : 'placeholder');
     }
 }
