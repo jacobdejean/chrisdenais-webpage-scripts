@@ -127,9 +127,6 @@ let messageErrorMessage = document.getElementById('message-error-message');
 let visibleSubmitButton = document.getElementById('visible-submit-button');
 let hiddenSubmitButton = document.getElementById('hidden-submit-button');
 
-let submitButtonLoadingIcon = document.getElementById('visible-submit-button-icon-loading');
-let submitButtonCompleteIcon = document.getElementById('visible-submit-button-icon-complete');
-let submitButtonText = document.getElementById('visible-submit-button-text');
 let formErrorMessage = document.getElementById('form-error');
 
 let hiddenNameInput = document.getElementById('hidden-name');
@@ -147,7 +144,7 @@ function visibleSubmitClick(evt) {
 
     formErrorMessage.style.display = 'none';
 
-    setButtonState('loading', "INITIALIZING...", 'initializing');
+    setButtonState('loading', "Sending...", 'sending');
 
     inputGroup.validate();
 
@@ -161,7 +158,7 @@ function visibleSubmitClick(evt) {
         setTimeout(send, 1200);
     }
     else {
-        setButtonState('def', 'SEND', '');
+        
     }
 }
 
@@ -170,11 +167,7 @@ function send() {
 }
 
 function setButtonState(state, copy, style) {
-    submitButtonLoadingIcon.style.display = state === 'loading' ? 'inline-block' : 'none';
-    submitButtonCompleteIcon.style.display = state === 'complete' ? 'inline-block' : 'none';
-    submitButtonText.style.transform = state === 'loading' ? 'translate(0px, -25%)' : 'translate(0px, 0px)';
-
-    submitButtonText.innerText = copy;
+    visibleSubmitButton.innerText = copy;
 
     removeClassModifiers(visibleSubmitButton, '');
     setModifierClass(visibleSubmitButton, style);
@@ -233,7 +226,7 @@ function showErrorState() {
 }
 
 function showSuccessState() {
-    setButtonState('complete', 'MESSAGE SENT', '');
+    setButtonState('complete', 'Message sent', 'sent');
     inputGroup.reset();
     changed = false;
 }
